@@ -1,0 +1,31 @@
+apiVersion: skaffold/v1alpha2
+kind: Config
+build:
+  tagPolicy:
+    envTemplate:
+      template: "{{.DOCKER_REGISTRY}}/vketest/node-http-ymrpq:{{.VERSION}}"
+  artifacts:
+  - imageName: changeme
+    workspace: .
+    docker: {}
+  local: {}
+deploy:
+  kubectl:
+    manifests:
+profiles:
+- name: dev
+  build:
+    tagPolicy:
+      envTemplate:
+        template: "{{.DOCKER_REGISTRY}}/vketest/node-http-ymrpq:{{.DIGEST_HEX}}"
+    artifacts:
+    - docker: {}
+    local: {}
+  deploy:
+    helm:
+      releases:
+      - name: node-http-ymrpq
+        chartPath: charts/node-http-ymrpq
+        setValueTemplates:
+          image.repository: "{{.DOCKER_REGISTRY}}/vketest/node-http-ymrpq"
+          image.tag: "{{.DIGEST_HEX}}"
